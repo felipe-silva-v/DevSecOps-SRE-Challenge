@@ -8,3 +8,6 @@
 *.log
 *.bak
 *.swp
+
+# Google Cloud credentials
+key.json

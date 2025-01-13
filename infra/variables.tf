@@ -13,6 +13,6 @@ variable "region" {
 # Variable for the database password
 variable "db_password" {
   description = "Password for the PostgreSQL database user"
-  default     = "mypassword.123"
+  default     = "password123"
   sensitive   = true
 }
