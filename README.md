@@ -75,9 +75,81 @@ After deployment, I validated the service by accessing the Cloud Run URL. The se
 
 ---
 
+## Part 2: Database Integration and Enhancements
+
+This section describes the steps taken to extend the API to integrate with a Cloud SQL database and provide a new endpoint.
+
+### **2.1 Database Integration**
+
+#### **Steps Taken:**
+1. Created a second Cloud SQL instance named `postgres-instance`.
+   - Configured the database and ensured proper IP authorization for connectivity.
+   - Used the `admin` user to create a new database `challenge_db`.
+2. Connected to the database via `gcloud sql connect` and created a new table named `test_table`.
+   - The table contains the following columns:
+     - `id`: Primary key, auto-incrementing.
+     - `column1`: VARCHAR(50).
+     - `column2`: VARCHAR(255).
+3. Inserted test data into the `test_table`.
+
+#### **Table Initialization Script:**
+```sql
+CREATE TABLE test_table (
+  id SERIAL PRIMARY KEY,
+  column1 VARCHAR(50) NOT NULL,
+  column2 VARCHAR(255) NOT NULL
+);
+
+INSERT INTO test_table (column1, column2) VALUES
+('Test 1', 'This is the first test row'),
+('Test 2', 'This is the second test row');
+```
+
+---
+
+### **2.2 API Enhancements**
+
+#### **Changes Made:**
+1. Modified the `app.py` file to include a new `/data` endpoint.
+   - The endpoint retrieves and returns all rows from `test_table` in JSON format.
+2. Updated the `DATABASE` configuration in `app.py` to connect via Cloud SQL Socket:
+   ```python
+   "host": "/cloudsql/devsecops-sre-challenge:us-central1:postgres-instance",
+   "port": 5432,
+   "database": "challenge_db",
+   "user": "admin",
+   "password": "password123"
+   ```
+3. Deployed the updated application using the following commands:
+   - Rebuilt and pushed the Docker image.
+   - Deployed the application with Cloud SQL instance binding:
+     ```bash
+     gcloud run deploy flask-api \
+       --image gcr.io/devsecops-sre-challenge/flask-api:latest \
+       --platform managed \
+       --region us-central1 \
+       --allow-unauthenticated \
+       --add-cloudsql-instances devsecops-sre-challenge:us-central1:postgres-instance
+     ```
+
+#### **Validation:**
+Accessed the `/data` endpoint, which returned the following response:
+```json
+{
+  "data": [
+    {"id": 1, "column1": "Test 1", "column2": "This is the first test row"},
+    {"id": 2, "column1": "Test 2", "column2": "This is the second test row"}
+  ]
+}
+```
+
+---
+
 ## Conclusion
 
-In Part 1 of the challenge, I successfully:
-1. Set up the infrastructure using Terraform.
-2. Developed and containerized a simple Flask API.
-3. Deployed the API to Google Cloud Run and made it publicly accessible.
+In Part 2 of the challenge, I successfully:
+1. Integrated the API with a Cloud SQL PostgreSQL database.
+2. Enhanced the API to include a `/data` endpoint that interacts with the database.
+3. Validated the deployment and functionality of the `/data` endpoint on Cloud Run.
+
+The service is now capable of handling database interactions securely and efficiently.
