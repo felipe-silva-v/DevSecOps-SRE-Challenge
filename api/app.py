@@ -41,12 +41,12 @@ def get_data():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Execute query to fetch data from the specified table
-        cursor.execute("SELECT * FROM test_table;")  # Query the test_table instead of your_table_name
+        # Execute query to fetch data from the users table
+        cursor.execute("SELECT user_id, email, name FROM users;")
         rows = cursor.fetchall()
         # Convert data to JSON format
         data = [
-            {"id": row[0], "column1": row[1], "column2": row[2]} for row in rows
+            {"user_id": row[0], "email": row[1], "name": row[2]} for row in rows
         ]
     except Exception as e:
         return jsonify({"error": str(e)}), 500
