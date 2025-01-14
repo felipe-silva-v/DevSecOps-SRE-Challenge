@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  deploy: # Define a deployment job
+  deploy:
     runs-on: ubuntu-latest # Use the latest Ubuntu environment
 
     steps:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Authenticate to Google Cloud
-        # Authenticate to Google Cloud using a service account key
+        # Authenticate to Google Cloud using the service account credentials stored as a GitHub secret
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }} # Securely use credentials from GitHub Secrets
@@ -31,12 +31,15 @@ jobs:
       - name: Build and push Docker image
         # Build the Docker image for the API and push it to Google Container Registry (GCR)
         run: |
+          echo "Building Docker image..."
           docker build -t gcr.io/devsecops-sre-challenge/flask-api:latest . # Build the Docker image
+          echo "Pushing Docker image to GCR..."
           docker push gcr.io/devsecops-sre-challenge/flask-api:latest # Push the image to GCR
 
       - name: Deploy API to Cloud Run
         # Deploy the Docker image to Google Cloud Run
         run: |
+          echo "Deploying API to Cloud Run..."
           gcloud run deploy flask-api \
             --image gcr.io/devsecops-sre-challenge/flask-api:latest \ # Use the latest Docker image
             --platform managed \ # Deploy to a fully managed Cloud Run environment
