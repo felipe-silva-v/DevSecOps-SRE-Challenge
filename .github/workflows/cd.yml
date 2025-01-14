@@ -32,7 +32,7 @@ jobs:
         # Build the Docker image for the API and push it to Google Container Registry (GCR)
         run: |
           echo "Building Docker image..."
-          docker build -t gcr.io/devsecops-sre-challenge/flask-api:latest . # Build the Docker image
+          docker build -t gcr.io/devsecops-sre-challenge/flask-api:latest ./api # Build the Docker image
           echo "Pushing Docker image to GCR..."
           docker push gcr.io/devsecops-sre-challenge/flask-api:latest # Push the image to GCR
 
