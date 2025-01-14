@@ -1,0 +1,45 @@
+name: Continuous Deployment
+
+# Trigger CD pipeline only on pushes to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy: # Define a deployment job
+    runs-on: ubuntu-latest # Use the latest Ubuntu environment
+
+    steps:
+      - name: Checkout code
+        # Check out the repository code into the workflow
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        # Authenticate to Google Cloud using a service account key
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }} # Securely use credentials from GitHub Secrets
+
+      - name: Set up gcloud CLI
+        # Install and configure the gcloud CLI for deployment
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: devsecops-sre-challenge # Set the Google Cloud project ID
+          service_account_key: ${{ secrets.GCP_CREDENTIALS }} # Use the credentials for authentication
+
+      - name: Build and push Docker image
+        # Build the Docker image for the API and push it to Google Container Registry (GCR)
+        run: |
+          docker build -t gcr.io/devsecops-sre-challenge/flask-api:latest . # Build the Docker image
+          docker push gcr.io/devsecops-sre-challenge/flask-api:latest # Push the image to GCR
+
+      - name: Deploy API to Cloud Run
+        # Deploy the Docker image to Google Cloud Run
+        run: |
+          gcloud run deploy flask-api \
+            --image gcr.io/devsecops-sre-challenge/flask-api:latest \ # Use the latest Docker image
+            --platform managed \ # Deploy to a fully managed Cloud Run environment
+            --region us-central1 \ # Specify the region for deployment
+            --allow-unauthenticated \ # Allow public access to the API
+            --add-cloudsql-instances devsecops-sre-challenge:us-central1:postgres-instance # Attach the Cloud SQL instance
