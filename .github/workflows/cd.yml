@@ -28,6 +28,12 @@ jobs:
           project_id: devsecops-sre-challenge # Set the Google Cloud project ID
           service_account_key: ${{ secrets.GCP_CREDENTIALS }} # Use the credentials for authentication
 
+      - name: Authenticate Docker with GCR
+        # Manually authenticate Docker with GCR
+        run: |
+          echo "Authenticating Docker with GCR..."
+          echo "$(gcloud auth print-access-token)" | docker login -u oauth2accesstoken --password-stdin https://gcr.io
+
       - name: Build and push Docker image
         # Build the Docker image for the API and push it to Google Container Registry (GCR)
         run: |
